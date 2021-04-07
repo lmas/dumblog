@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="{{.Meta.Style}}">
+        <title>{{.Current.Meta.Title}} | {{.Meta.Title}}</title>
+</head>
+<body>
+        <header>
+                <p>{{.Meta.Title}}</p>
+        </header>
+        <main>
+                <article>
+                        <p>{{.Current.Meta.Title}}</p>
+                        <p>Published: {{.Current.Meta.Published | prettydate}}</p>
+                        <p>Tags: {{range .Current.Meta.Tags}}
+                                <a href="/posts/tags.html#{{.}}">{{.}}</a>
+                        {{end}}</p>
+                        <p>Summary: {{.Current.Meta.Short}}</p>
+                        <hr>
+                        {{.Current.Body | safehtml}}
+                </article>
+                <aside>
+                        <a href="/index.html">Latest</a>
+                        <a href="/posts/archive.html">Archive</a>
+                        <a href="/posts/tags.html">Tags</a>
+                </aside>
+        </main>
+        <footer>
+                <p>{{.Meta.Copyright}}</p>
+                <p>Generated with <a href="https://github.com/lmas/dumblog">dumblog</a></p>
+        </footer>
+</body>
+</html>

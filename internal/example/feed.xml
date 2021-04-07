@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+        <title>{{.Meta.Title}}</title>
+        <subtitle>The latest posts from {{.Meta.Title}}</subtitle>
+        <link href="{{.Meta.Site}}"/>
+        <updated>{{.Time | atomdate}}</updated>
+        <author>
+                <name>{{.Meta.Author}}</name>
+        </author>
+        <rights>{{.Meta.Copyright}}</rights>
+        <id>{{.Meta.Site}}</id>
+        {{$site := .Meta.Site}}
+        {{range .Posts | maxposts 25 -}}
+        <entry>
+                <title>{{.Meta.Title}}</title>
+                <id>{{$site}}{{.Link}}</id>
+                <link href="{{$site}}{{.Link}}"/>
+                <updated>{{.Meta.Published | atomdate}}</updated>
+                <summary>{{.Meta.Short}}</summary>
+        </entry>
+        {{- end}}
+</feed>
