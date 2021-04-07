@@ -7,8 +7,8 @@ Yet another minimal, dumb, static blog generator.
 
 - Standard Go templates
 - Easy to write blog posts:
-        - Frontmatter meta data using yaml (`title`, `published` time, `short` description and list of `tags`)
-        - Main body written using markdown ([commonmark](https://commonmark.org/help/) flavour)
+  * Frontmatter meta data using yaml (`title`, `published` time, `short` description and list of `tags`)
+  * Main body written using markdown ([commonmark](https://commonmark.org/help/) flavour)
 - Optional site-wide meta data loaded from a `.meta.yaml` file
 
 ## Status
@@ -69,4 +69,4 @@ Commands:
 
 ## License
 
-GPL, See the LICENSE file for details.
+GPL, See the [LICENSE](LICENSE) file for details.
