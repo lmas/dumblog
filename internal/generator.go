@@ -131,7 +131,7 @@ func (g *Generator) ReadTemplate(dir string) error {
 			}
 			g.tmplText = append(g.tmplText, t)
 
-		case ext == ".md": // Posts
+		case filepath.Base(rel) == postSource: // Posts
 			post, err := readPost(path, filepath.Join(filepath.Dir(rel), postDest))
 			if err != nil {
 				return fmt.Errorf("read %q: %s", path, err)
