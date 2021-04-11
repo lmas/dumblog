@@ -3,23 +3,14 @@
 <head>
         <meta charset="utf-8">
         <link rel="stylesheet" type="text/css" href="{{.Meta.Style}}">
-        <title>{{.Current.Meta.Title}} | {{.Meta.Title}}</title>
+        <title>{{block "title" .}}NO TITLE{{end}} | {{.Meta.Title}}</title>
 </head>
 <body>
         <header>
                 <p>{{.Meta.Title}}</p>
         </header>
         <main>
-                <article>
-                        <p>{{.Current.Meta.Title}}</p>
-                        <p>Published: {{.Current.Meta.Published | prettydate}}</p>
-                        <p>Tags: {{range .Current.Meta.Tags}}
-                                <a href="/posts/tags.html#{{.}}">{{.}}</a>
-                        {{end}}</p>
-                        <p>Summary: {{.Current.Meta.Short}}</p>
-                        <hr>
-                        {{.Current.Body | safehtml}}
-                </article>
+                {{block "body" .}}NO BODY{{end}}
                 <aside>
                         <a href="/index.html">Latest</a>
                         <a href="/posts/archive.html">Archive</a>

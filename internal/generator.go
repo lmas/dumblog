@@ -39,8 +39,9 @@ const (
 
 	metaSource string = ".meta.yaml"
 	postSource string = "post.md"
-	postTmpl   string = "_post.html"
 	postDest   string = "index.html"
+	postTmpl   string = ".post.html"
+	layoutTmpl string = ".layout.html"
 )
 
 type filePath struct {
@@ -50,17 +51,21 @@ type filePath struct {
 
 // Generator is loads & parses templates and then execs & writes them to a directory.
 type Generator struct {
-	meta     Meta
-	postTmpl *html.Template
-	tmplHTML []*html.Template
-	tmplText []*text.Template
-	posts    []Post
-	files    []filePath
+	meta       Meta
+	tmplLayout *html.Template
+	tmplPost   *html.Template
+	tmplHTML   map[string]*html.Template
+	tmplText   map[string]*text.Template
+	posts      []Post
+	files      []filePath
 }
 
 // New returns a new *Generator instance.
 func New() *Generator {
-	return &Generator{}
+	return &Generator{
+		tmplHTML: make(map[string]*html.Template),
+		tmplText: make(map[string]*text.Template),
+	}
 }
 
 func loadMeta(path string) (Meta, error) {
@@ -97,6 +102,14 @@ func (g *Generator) ReadTemplate(dir string) error {
 	if err != nil {
 		return err
 	}
+	g.tmplLayout, err = loadHTML(filepath.Join(dir, layoutTmpl))
+	if err != nil {
+		return err
+	}
+	g.tmplPost, err = cloneHTML(g.tmplLayout, filepath.Join(dir, postTmpl))
+	if err != nil {
+		return err
+	}
 
 	return filepath.WalkDir(dir, func(path string, de fs.DirEntry, err error) error {
 		if err != nil {
@@ -111,25 +124,17 @@ func (g *Generator) ReadTemplate(dir string) error {
 		ext := filepath.Ext(path)
 
 		switch {
-		case rel == postTmpl: // post template, must be caught before the other html loader
-			g.postTmpl, err = loadHTML(path, rel)
-			if err != nil {
-				return err
-			}
-
 		case ext == ".html": // HTML templates
-			t, err := loadHTML(path, rel)
+			g.tmplHTML[rel], err = cloneHTML(g.tmplLayout, path)
 			if err != nil {
 				return err
 			}
-			g.tmplHTML = append(g.tmplHTML, t)
 
 		case ext == ".xml", ext == ".txt": // Special text templates
-			t, err := loadText(path, rel)
+			g.tmplText[rel], err = loadText(path)
 			if err != nil {
 				return err
 			}
-			g.tmplText = append(g.tmplText, t)
 
 		case filepath.Base(rel) == postSource: // Posts
 			post, err := readPost(path, filepath.Join(filepath.Dir(rel), postDest))
@@ -156,8 +161,8 @@ func (g *Generator) loadParams() TemplateParams {
 		Tags:  readTags(g.posts),
 	}
 
-	for _, t := range g.tmplHTML {
-		url := path.Join("/", filepath.ToSlash(t.Name()))
+	for name := range g.tmplHTML {
+		url := path.Join("/", filepath.ToSlash(name))
 		params.Pages = append(params.Pages, url)
 	}
 	for _, p := range g.posts {
@@ -179,7 +184,7 @@ func (g *Generator) ExecuteTemplate(dir string) error {
 	for _, p := range g.posts {
 		path := filepath.Join(dir, p.rel)
 		params.Current = p
-		if err := executeTemplate(path, g.postTmpl, params); err != nil {
+		if err := executeTemplate(path, g.tmplPost, params); err != nil {
 			return err
 		}
 	}
@@ -187,16 +192,16 @@ func (g *Generator) ExecuteTemplate(dir string) error {
 		params.Current = g.posts[0]
 	}
 
-	for _, t := range g.tmplHTML {
-		path := filepath.Join(dir, t.Name())
-		if err := executeTemplate(path, t, params); err != nil {
+	for name, tmpl := range g.tmplHTML {
+		path := filepath.Join(dir, name)
+		if err := executeTemplate(path, tmpl, params); err != nil {
 			return err
 		}
 	}
 
-	for _, t := range g.tmplText {
-		path := filepath.Join(dir, t.Name())
-		if err := executeTemplate(path, t, params); err != nil {
+	for name, tmpl := range g.tmplText {
+		path := filepath.Join(dir, name)
+		if err := executeTemplate(path, tmpl, params); err != nil {
 			return err
 		}
 	}

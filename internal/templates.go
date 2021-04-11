@@ -21,7 +21,6 @@ import (
 	html "html/template"
 	"io"
 	"io/fs"
-	"os"
 	"path/filepath"
 	text "text/template"
 	"time"
@@ -107,20 +106,22 @@ func CreateTemplate(dir string) error {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func loadHTML(path, rel string) (*html.Template, error) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	return html.New(rel).Funcs(html.FuncMap(TemplateFuncs)).Parse(string(b))
+func loadHTML(path string) (*html.Template, error) {
+	name := filepath.Base(path)
+	return html.New(name).Funcs(html.FuncMap(TemplateFuncs)).ParseFiles(path)
 }
 
-func loadText(path, rel string) (*text.Template, error) {
-	b, err := os.ReadFile(path)
+func cloneHTML(orig *html.Template, path string) (*html.Template, error) {
+	t, err := orig.Clone()
 	if err != nil {
 		return nil, err
 	}
-	return text.New(rel).Funcs(TemplateFuncs).Parse(string(b))
+	return t.ParseFiles(path)
+}
+
+func loadText(path string) (*text.Template, error) {
+	name := filepath.Base(path)
+	return text.New(name).Funcs(TemplateFuncs).ParseFiles(path)
 }
 
 // Let's us accept both `text/template` and `html/template` in executeTemplate()
