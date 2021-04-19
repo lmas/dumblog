@@ -18,7 +18,6 @@ package internal
 import (
 	"bytes"
 	"fmt"
-	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -92,11 +91,6 @@ func sortPosts(posts []Post) {
 type Tag struct {
 	Title string
 	Posts []Post
-}
-
-// Slug returns a URL safe title
-func (t Tag) Slug() string {
-	return url.PathEscape(strings.ReplaceAll(strings.ToLower(t.Title), " ", "_"))
 }
 
 func sortTags(tags []Tag) {

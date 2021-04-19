@@ -4,7 +4,7 @@
         <p>{{.Current.Meta.Title}}</p>
         <p>Published: {{.Current.Meta.Published | prettydate}}</p>
         <p>Tags: {{range .Current.Meta.Tags}}
-                <a href="/posts/tags.html#{{.}}">{{.}}</a>
+                <a href="/posts/tags.html#{{. | slugify}}">{{.}}</a>
         {{end}}</p>
         <p>Summary: {{.Current.Meta.Short}}</p>
         <hr>

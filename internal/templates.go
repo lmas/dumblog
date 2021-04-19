@@ -21,7 +21,9 @@ import (
 	html "html/template"
 	"io"
 	"io/fs"
+	"net/url"
 	"path/filepath"
+	"strings"
 	text "text/template"
 	"time"
 )
@@ -79,6 +81,9 @@ var TemplateFuncs = text.FuncMap{
 			l = max
 		}
 		return posts[:l]
+	},
+	"slugify": func(s string) string {
+		return url.PathEscape(strings.ReplaceAll(strings.ToLower(s), " ", "_"))
 	},
 }
 

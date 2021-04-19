@@ -3,7 +3,7 @@
 <h1>Tags</h1>
 {{range .Tags -}}
 <div>
-        <h2 id="{{.Slug}}">{{.Title}}</h2>
+        <h2 id="{{.Title | slugify}}">{{.Title}}</h2>
         <ol>
                 {{range .Posts -}}
                 <li>
