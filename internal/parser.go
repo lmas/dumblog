@@ -163,11 +163,11 @@ func readPost(path, rel string) (Post, error) {
 	case len(post.Meta.Title) < 1:
 		return Post{}, fmt.Errorf("header is missing the title field")
 	case post.Meta.Published.IsZero():
-		return Post{}, fmt.Errorf("header is missing the date field")
+		return Post{}, fmt.Errorf("header is missing the published field")
 	case len(post.Meta.Short) < 1:
 		return Post{}, fmt.Errorf("header is missing the short field")
 	case len(post.Meta.Tags) < 1:
-		return Post{}, fmt.Errorf("header is missing the tag field")
+		return Post{}, fmt.Errorf("header is missing the tags field")
 	}
 
 	post.Meta.Title = strings.Title(post.Meta.Title)
