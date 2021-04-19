@@ -32,6 +32,15 @@ func trimDir(path, dir string) string {
 	return strings.TrimPrefix(path, dir)
 }
 
+func containsDot(path string) bool {
+	for _, p := range strings.Split(path, string(os.PathSeparator)) {
+		if strings.HasPrefix(p, ".") {
+			return true
+		}
+	}
+	return false
+}
+
 func createFile(p string) (*os.File, error) {
 	d := filepath.Dir(p)
 	if err := os.MkdirAll(d, dirPerm); err != nil {

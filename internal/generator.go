@@ -35,13 +35,13 @@ const (
 	// Name is the application name shown for "dumblog version"
 	Name string = "dumblog"
 	// Version is the current version shown for "dumblog version"
-	Version string = "0.1"
+	Version string = "0.1.2"
 
-	metaSource string = ".meta.yaml"
 	postSource string = "post.md"
 	postDest   string = "index.html"
-	postTmpl   string = ".post.html"
-	layoutTmpl string = ".layout.html"
+	postTmpl   string = ".dumblog/post.html"
+	layoutTmpl string = ".dumblog/layout.html"
+	metaSource string = ".dumblog/meta.yaml"
 )
 
 type filePath struct {
@@ -116,11 +116,12 @@ func (g *Generator) ReadTemplate(dir string) error {
 			return err
 		} else if de.IsDir() {
 			return nil
-		} else if strings.HasPrefix(filepath.Base(path), ".") {
-			return nil
 		}
 
 		rel := trimDir(path, dir)
+		if containsDot(rel) {
+			return nil
+		}
 		ext := filepath.Ext(path)
 
 		switch {
