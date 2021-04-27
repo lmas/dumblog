@@ -16,6 +16,7 @@
 package internal
 
 import (
+	"bytes"
 	"embed"
 	"fmt"
 	html "html/template"
@@ -110,6 +111,33 @@ func CreateTemplate(dir string) error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func execPost(file string, post Post, params TemplateParams) error {
+	// First execute the raw markdown body as a regular template
+	b, err := post.Body()
+	if err != nil {
+		return err
+	}
+	tmpl, err := text.New("").Funcs(TemplateFuncs).Parse(b)
+	if err != nil {
+		return err
+	}
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, params); err != nil {
+		return err
+	}
+
+	// Then convert the executed tmpl from markdown to final html
+	w, err := createFile(file)
+	if err != nil {
+		return err
+	}
+	defer w.Close() // #nosec G307
+	if err := markdownParser.Convert(buf.Bytes(), w); err != nil {
+		return err
+	}
+	return w.Sync()
+}
 
 func loadHTML(path string) (*html.Template, error) {
 	name := filepath.Base(path)

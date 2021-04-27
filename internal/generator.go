@@ -185,9 +185,10 @@ func (g *Generator) ExecuteTemplate(dir string) error {
 	for _, p := range g.posts {
 		path := filepath.Join(dir, p.rel)
 		params.Current = p
-		if err := executeTemplate(path, g.tmplPost, params); err != nil {
+		if err := execPost(path, p, params); err != nil {
 			return err
 		}
+
 	}
 	if len(g.posts) > 0 {
 		params.Current = g.posts[0]

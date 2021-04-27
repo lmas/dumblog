@@ -16,8 +16,6 @@
 package internal
 
 import (
-	"bytes"
-	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -52,19 +50,13 @@ type Post struct {
 
 // Body parses the post's body and parses it as commonmark.
 func (p Post) Body() (string, error) {
-	// f, err := os.Open(p.File()) // #nosec G304
 	f, err := os.Open(p.source) // #nosec G304
 	if err != nil {
 		return "", err
 	}
 	// It's only being read, should be safe to ignore Close() errors
 	defer f.Close() // #nosec G307
-
-	var body bytes.Buffer
-	if err := scanBody(f, &body); err != nil {
-		return "", fmt.Errorf("read body: %s", err)
-	}
-	return body.String(), nil
+	return scanBody(f)
 }
 
 // Link returns a relative http link to the post.
