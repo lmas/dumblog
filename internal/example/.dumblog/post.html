@@ -1,4 +1,9 @@
-{{define "title"}}{{.Current.Meta.Title}}{{end}}
+{{template "layout" .}}
+
+{{define "title"}}
+{{.Current.Meta.Title}}
+{{end}}
+
 {{define "body"}}
 <article>
         <p>{{.Current.Meta.Title}}</p>

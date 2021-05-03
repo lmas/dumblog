@@ -18,7 +18,6 @@ package internal
 import (
 	"errors"
 	"fmt"
-	html "html/template"
 	"io/fs"
 	"os"
 	"path"
@@ -37,11 +36,11 @@ const (
 	// Version is the current version shown for "dumblog version"
 	Version string = "0.1.2"
 
-	postSource string = "post.md"
-	postDest   string = "index.html"
-	postTmpl   string = ".dumblog/post.html"
-	layoutTmpl string = ".dumblog/layout.html"
-	metaSource string = ".dumblog/meta.yaml"
+	postOrig     string = "post.md"
+	postDest     string = "index.html"
+	metaSource   string = ".dumblog/meta.yaml"
+	layoutSource string = ".dumblog/layout.html"
+	postSource   string = ".dumblog/post.html"
 )
 
 type filePath struct {
@@ -52,20 +51,16 @@ type filePath struct {
 // Generator is loads & parses templates and then execs & writes them to a directory.
 type Generator struct {
 	meta       Meta
-	tmplLayout *html.Template
-	tmplPost   *html.Template
-	tmplHTML   map[string]*html.Template
-	tmplText   map[string]*text.Template
+	tmplLayout *text.Template
+	tmplPost   *text.Template
 	posts      []Post
+	tmpls      []filePath
 	files      []filePath
 }
 
 // New returns a new *Generator instance.
 func New() *Generator {
-	return &Generator{
-		tmplHTML: make(map[string]*html.Template),
-		tmplText: make(map[string]*text.Template),
-	}
+	return &Generator{}
 }
 
 func loadMeta(path string) (Meta, error) {
@@ -102,11 +97,11 @@ func (g *Generator) ReadTemplate(dir string) error {
 	if err != nil {
 		return err
 	}
-	g.tmplLayout, err = loadHTML(filepath.Join(dir, layoutTmpl))
+	g.tmplLayout, err = loadTemplate(filepath.Join(dir, layoutSource))
 	if err != nil {
 		return err
 	}
-	g.tmplPost, err = cloneHTML(g.tmplLayout, filepath.Join(dir, postTmpl))
+	g.tmplPost, err = cloneTemplate(g.tmplLayout, filepath.Join(dir, postSource))
 	if err != nil {
 		return err
 	}
@@ -122,27 +117,21 @@ func (g *Generator) ReadTemplate(dir string) error {
 		if containsDot(rel) {
 			return nil
 		}
-		ext := filepath.Ext(path)
+		ext := filepath.Ext(rel)
 
 		switch {
-		case ext == ".html": // HTML templates
-			g.tmplHTML[rel], err = cloneHTML(g.tmplLayout, path)
-			if err != nil {
-				return err
-			}
-
-		case ext == ".xml", ext == ".txt": // Special text templates
-			g.tmplText[rel], err = loadText(path)
-			if err != nil {
-				return err
-			}
-
-		case filepath.Base(rel) == postSource: // Posts
+		case filepath.Base(rel) == postOrig: // Posts
 			post, err := readPost(path, filepath.Join(filepath.Dir(rel), postDest))
 			if err != nil {
 				return fmt.Errorf("read %q: %s", path, err)
 			}
 			g.posts = append(g.posts, post)
+
+		case ext == ".html", ext == ".xml", ext == ".txt": // Text templates
+			g.tmpls = append(g.tmpls, filePath{
+				source: path,
+				rel:    rel,
+			})
 
 		default: // Other static files
 			g.files = append(g.files, filePath{
@@ -162,8 +151,11 @@ func (g *Generator) loadParams() TemplateParams {
 		Tags:  readTags(g.posts),
 	}
 
-	for name := range g.tmplHTML {
-		url := path.Join("/", filepath.ToSlash(name))
+	for _, f := range g.tmpls {
+		if filepath.Ext(f.rel) != ".html" {
+			continue
+		}
+		url := path.Join("/", filepath.ToSlash(f.rel))
 		params.Pages = append(params.Pages, url)
 	}
 	for _, p := range g.posts {
@@ -183,9 +175,9 @@ func (g *Generator) ExecuteTemplate(dir string) error {
 	params := g.loadParams()
 
 	for _, p := range g.posts {
-		path := filepath.Join(dir, p.rel)
 		params.Current = p
-		if err := execPost(path, p, params); err != nil {
+		path := filepath.Join(dir, p.rel)
+		if err := executeTemplate(path, g.tmplPost, params); err != nil {
 			return err
 		}
 
@@ -194,15 +186,12 @@ func (g *Generator) ExecuteTemplate(dir string) error {
 		params.Current = g.posts[0]
 	}
 
-	for name, tmpl := range g.tmplHTML {
-		path := filepath.Join(dir, name)
-		if err := executeTemplate(path, tmpl, params); err != nil {
+	for _, f := range g.tmpls {
+		tmpl, err := cloneTemplate(g.tmplLayout, f.source)
+		if err != nil {
 			return err
 		}
-	}
-
-	for name, tmpl := range g.tmplText {
-		path := filepath.Join(dir, name)
+		path := filepath.Join(dir, f.rel)
 		if err := executeTemplate(path, tmpl, params); err != nil {
 			return err
 		}

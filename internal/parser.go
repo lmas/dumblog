@@ -117,7 +117,7 @@ func scanHeader(r io.Reader, v interface{}) error {
 	return yaml.UnmarshalStrict(b, v)
 }
 
-func scanBody(r io.Reader) (string, error) {
+func scanBody(r io.Reader, w io.Writer) error {
 	separators := 0
 	b, err := scan(r, maxFileSize, func(line []byte) ([]byte, bool) {
 		if separators == 2 {
@@ -130,13 +130,13 @@ func scanBody(r io.Reader) (string, error) {
 	})
 	switch {
 	case err != nil:
-		return "", err
+		return err
 	case len(b) < 1:
-		return "", fmt.Errorf("missing body")
+		return fmt.Errorf("missing body")
 	case separators != 2:
-		return "", fmt.Errorf("missing separator lines")
+		return fmt.Errorf("missing separator lines")
 	}
-	return string(b), nil
+	return markdownParser.Convert(b, w)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

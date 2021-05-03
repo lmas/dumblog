@@ -10,3 +10,4 @@
 User-agent: *
 Disallow:
 Sitemap: {{.Meta.Site}}/sitemap.xml
+

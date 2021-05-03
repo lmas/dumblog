@@ -41,16 +41,16 @@ func containsDot(path string) bool {
 	return false
 }
 
-func createFile(p string) (*os.File, error) {
-	d := filepath.Dir(p)
-	if err := os.MkdirAll(d, dirPerm); err != nil {
-		return nil, err
+func createDir(path string) error {
+	d := filepath.Dir(path)
+	return os.MkdirAll(d, dirPerm)
+}
+
+func writeFile(path string, data []byte) error {
+	if err := createDir(path); err != nil {
+		return err
 	}
-	f, err := os.OpenFile(p, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, filePerm) // #nosec G304
-	if err != nil {
-		return nil, err
-	}
-	return f, nil
+	return os.WriteFile(path, data, filePerm)
 }
 
 func copyFile(r, w string) error {
@@ -61,7 +61,10 @@ func copyFile(r, w string) error {
 	// Think Close() errors on read only files can be safely ignored
 	defer src.Close() // #nosec G307
 
-	dst, err := createFile(w)
+	if err := createDir(w); err != nil {
+		return err
+	}
+	dst, err := os.OpenFile(w, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, filePerm) // #nosec G304
 	if err != nil {
 		return err
 	}
@@ -72,7 +75,6 @@ func copyFile(r, w string) error {
 	if _, err := io.Copy(dst, src); err != nil {
 		return err
 	}
-
 	// Hopefully catches any file write errors before dst.Close(), see:
 	// https://www.joeshaw.org/dont-defer-close-on-writable-files/
 	return dst.Sync()

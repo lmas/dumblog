@@ -20,9 +20,9 @@ import (
 	"embed"
 	"fmt"
 	html "html/template"
-	"io"
 	"io/fs"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 	text "text/template"
@@ -41,6 +41,7 @@ type TemplateParams struct {
 	Tags []Tag
 	// Pages is a list of all html pages that will be written
 	Pages []string
+
 	// Current is the latest post published (or the active post while writing each individual post)
 	Current Post
 }
@@ -103,94 +104,40 @@ func CreateTemplate(dir string) error {
 			return nil // Skip
 		}
 		dst := filepath.Join(dir, trimDir(src, exampleDir))
-		if err := writeTemplate(src, dst); err != nil {
+		b, err := content.ReadFile(src)
+		if err != nil {
 			return err
 		}
-		return nil
+		return writeFile(dst, bytes.TrimSpace(b))
 	})
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func execPost(file string, post Post, params TemplateParams) error {
-	// First execute the raw markdown body as a regular template
-	b, err := post.Body()
-	if err != nil {
-		return err
-	}
-	tmpl, err := text.New("").Funcs(TemplateFuncs).Parse(b)
-	if err != nil {
-		return err
-	}
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, params); err != nil {
-		return err
-	}
-
-	// Then convert the executed tmpl from markdown to final html
-	w, err := createFile(file)
-	if err != nil {
-		return err
-	}
-	defer w.Close() // #nosec G307
-	if err := markdownParser.Convert(buf.Bytes(), w); err != nil {
-		return err
-	}
-	return w.Sync()
-}
-
-func loadHTML(path string) (*html.Template, error) {
-	name := filepath.Base(path)
-	return html.New(name).Funcs(html.FuncMap(TemplateFuncs)).ParseFiles(path)
-}
-
-func cloneHTML(orig *html.Template, path string) (*html.Template, error) {
-	t, err := orig.Clone()
+func loadTemplate(path string) (*text.Template, error) {
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	return t.ParseFiles(path)
+	return text.New("").Funcs(TemplateFuncs).Parse(string(b))
 }
 
-func loadText(path string) (*text.Template, error) {
-	name := filepath.Base(path)
-	return text.New(name).Funcs(TemplateFuncs).ParseFiles(path)
+func cloneTemplate(base *text.Template, path string) (*text.Template, error) {
+	t, err := base.Clone()
+	if err != nil {
+		return nil, err
+	}
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return t.Parse(string(b))
 }
 
-// Let's us accept both `text/template` and `html/template` in executeTemplate()
-type templateExecuter interface {
-	Execute(io.Writer, interface{}) error
-}
-
-func executeTemplate(file string, tmpl templateExecuter, params TemplateParams) error {
-	f, err := createFile(file)
-	if err != nil {
+func executeTemplate(file string, tmpl *text.Template, params TemplateParams) error {
+	var buf bytes.Buffer
+	if err := tmpl.ExecuteTemplate(&buf, "", params); err != nil {
 		return err
 	}
-	defer f.Close() // #nosec G307
-	if err := tmpl.Execute(f, params); err != nil {
-		return err
-	}
-	return f.Sync()
-}
-
-func writeTemplate(src, dst string) error {
-	r, err := content.Open(src)
-	if err != nil {
-		return err
-	}
-	// Assume it's safe to ignore Close() errors on files just being read
-	defer r.Close() // #nosec G307
-	w, err := createFile(dst)
-	if err != nil {
-		return err
-	}
-	defer w.Close() // #nosec G307
-	_, err = io.Copy(w, r)
-	if err != nil {
-		return err
-	}
-	// Hopefully catches any file write errors before dst.Close(), see:
-	// https://www.joeshaw.org/dont-defer-close-on-writable-files/
-	return w.Sync()
+	return writeFile(file, bytes.TrimSpace(buf.Bytes()))
 }

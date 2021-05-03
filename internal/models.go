@@ -16,6 +16,7 @@
 package internal
 
 import (
+	"bytes"
 	"os"
 	"path"
 	"path/filepath"
@@ -56,7 +57,11 @@ func (p Post) Body() (string, error) {
 	}
 	// It's only being read, should be safe to ignore Close() errors
 	defer f.Close() // #nosec G307
-	return scanBody(f)
+	var buf bytes.Buffer
+	if err := scanBody(f, &buf); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 // Link returns a relative http link to the post.
