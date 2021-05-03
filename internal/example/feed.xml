@@ -10,7 +10,7 @@
         <rights>{{.Meta.Copyright}}</rights>
         <id>{{.Meta.Site}}</id>
         {{$site := .Meta.Site}}
-        {{range .Posts | maxposts 25 -}}
+        {{range .Posts | postsbydir "posts" | postslimit 25 -}}
         <entry>
                 <title>{{.Meta.Title}}</title>
                 <id>{{$site}}{{.Link}}</id>

@@ -41,6 +41,15 @@ func containsDot(path string) bool {
 	return false
 }
 
+func firstDir(path string) string {
+	for i := 0; i < len(path); i++ {
+		if os.IsPathSeparator(path[i]) {
+			return path[:i]
+		}
+	}
+	return ""
+}
+
 func createDir(path string) error {
 	d := filepath.Dir(path)
 	return os.MkdirAll(d, dirPerm)

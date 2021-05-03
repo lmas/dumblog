@@ -5,7 +5,7 @@
 {{define "body"}}
 <h1>Archive</h1>
 <ol>
-        {{range .Posts -}}
+        {{range .Posts | postsbydir "posts" -}}
         <li>
                 <h2><a href="{{.Link}}">{{.Meta.Title}}</a></h2>
                 <p>{{.Meta.Published | prettydate}}</p>

@@ -77,12 +77,21 @@ var TemplateFuncs = text.FuncMap{
 	"safehtml": func(s string) html.HTML {
 		return html.HTML(s) // #nosec G203
 	},
-	"maxposts": func(max int, posts []Post) []Post {
+	"postslimit": func(max int, posts []Post) []Post {
 		l := len(posts)
 		if l > max {
 			l = max
 		}
 		return posts[:l]
+	},
+	"postsbydir": func(dir string, posts []Post) []Post {
+		var list []Post
+		for _, p := range posts {
+			if firstDir(p.rel) == dir {
+				list = append(list, p)
+			}
+		}
+		return list
 	},
 	"slugify": func(s string) string {
 		return url.PathEscape(strings.ReplaceAll(strings.ToLower(s), " ", "_"))
