@@ -1,0 +1,17 @@
+---
+>
+ )
+             # anything, followed by:
+ ?:
+   or comment line
+       # multiline comment
+      (?=</?%) |          # a python block
+ art or end
+                 (?=\$\{) |          # a substitution
+                 (?<=\n)(?=\s*%) |
+                                     # - don't consume
+ e
+  
+ )
+  :
+---

@@ -1,0 +1,56 @@
+---
+>
+ )
+  
+ t
+  
+ d
+  
+ e
+  
+ n
+ ((?i)select|construct|describe|ask|where|filter|group\s+by|minus|distinct|reduced|from\s+named|from|order\s+by|desc|asc|limit|offset|bindings|load|clear|drop|create|add|move|copy|insert\s+data|delete\s+data|delete\s+where|delete|insert|using\s+named|using|graph|default|named|all|optional|service|silent|bind|union|not\s+in|in|as|having|to|prefix|base)\b 
+  
+ :
+  
+ t
+  
+ d
+  
+ e
+ >
+ )
+  
+ :
+  
+ t
+  
+ d
+  
+  
+ :
+  
+ t
+  
+ n
+  
+  
+ :
+  
+ t
+  
+ d
+  
+ e
+ >
+ )
+  
+ :
+  
+ t
+  
+ d
+  
+  
+ :
+---

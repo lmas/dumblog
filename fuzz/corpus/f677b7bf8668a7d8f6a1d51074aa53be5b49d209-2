@@ -1,0 +1,7 @@
+---
+þÿCitle: missin^(\w+)( subclass: )(#\w+)(\s+instanceVariableNames: )(.*?)(\s+classVariableNames: )(.*?)(\s+poolDictionaries: )(.*?)(\s+category: )(.*?)(!)g body
+short: missing the body
+published: 2020-01-01
+tags:
+- missing
+---
