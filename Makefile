@@ -1,6 +1,8 @@
 
 COVER=.cover.out
 COVER_HTML=.cover.html
+FUZZ_DIR=./fuzz
+FUZZ_BUILD=$(FUZZ_DIR)/fuzz.zip
 
 .PHONY: test
 test:
@@ -29,8 +31,12 @@ golint:
 gosec:
 	gosec -quiet -fmt=golint ./...
 
+.PHONY: fuzz
+fuzz:
+	go-fuzz-build -o "$(FUZZ_BUILD)" ./internal/
+	go-fuzz -bin "$(FUZZ_BUILD)" -workdir "$(FUZZ_DIR)"
+
 .PHONY: clean
 clean:
 	go clean
-	rm "${COVER}"
-	rm "${COVER_HTML}"
+	rm "${COVER}" "${COVER_HTML}" "$(FUZZ_BUILD)"
