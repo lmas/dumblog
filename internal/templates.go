@@ -98,26 +98,20 @@ var TemplateFuncs = text.FuncMap{
 	},
 }
 
-var (
-	//go:embed example/*
-	content    embed.FS
-	exampleDir string = "example"
-)
-
 // CreateTemplate creates an example dir with some template files you can use.
-func CreateTemplate(dir string) error {
-	return fs.WalkDir(content, exampleDir, func(src string, de fs.DirEntry, err error) error {
+func CreateTemplate(dst, src string, content embed.FS) error {
+	return fs.WalkDir(content, src, func(path string, de fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		} else if de.IsDir() {
 			return nil // Skip
 		}
-		dst := filepath.Join(dir, trimDir(src, exampleDir))
-		b, err := content.ReadFile(src)
+		b, err := content.ReadFile(path)
 		if err != nil {
 			return err
 		}
-		return writeFile(dst, bytes.TrimSpace(b))
+		out := filepath.Join(dst, trimDir(path, src))
+		return writeFile(out, bytes.TrimSpace(b))
 	})
 }
 

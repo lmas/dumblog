@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/lmas/dumblog/example"
 	"github.com/lmas/dumblog/internal"
 )
 
@@ -89,7 +90,7 @@ func printHelp() {
 }
 
 func runInit() {
-	if err := internal.CreateTemplate(initDir); err != nil {
+	if err := internal.CreateTemplate(initDir, example.Dir, example.Content); err != nil {
 		printFatal("Error creating template: %s", err)
 	}
 	print("Wrote %s", initDir)
