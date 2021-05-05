@@ -143,8 +143,8 @@ func (g *Generator) ReadTemplate(dir string) error {
 	})
 }
 
-func (g *Generator) loadParams() TemplateParams {
-	params := TemplateParams{
+func (g *Generator) loadParams() Params {
+	params := Params{
 		Time:  time.Now(),
 		Meta:  g.meta,
 		Posts: g.posts,
@@ -175,15 +175,12 @@ func (g *Generator) ExecuteTemplate(dir string) error {
 	params := g.loadParams()
 
 	for _, p := range g.posts {
-		params.Current = p
+		pa := PostParams{params, p}
 		path := filepath.Join(dir, p.rel)
-		if err := executeTemplate(path, g.tmplPost, params); err != nil {
+		if err := executeTemplate(path, g.tmplPost, pa); err != nil {
 			return err
 		}
 
-	}
-	if len(g.posts) > 0 {
-		params.Current = g.posts[0]
 	}
 
 	for _, f := range g.tmpls {

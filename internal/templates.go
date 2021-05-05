@@ -29,8 +29,8 @@ import (
 	"time"
 )
 
-// TemplateParams is a struct holding all available meta data you can use in a template.
-type TemplateParams struct {
+// Params is a struct holding all available meta data you can use in a template.
+type Params struct {
 	// Time is the current date and time
 	Time time.Time
 	// Meta contains user defined meta data, see Meta
@@ -41,8 +41,13 @@ type TemplateParams struct {
 	Tags []Tag
 	// Pages is a list of all html pages that will be written
 	Pages []string
+}
 
-	// Current is the latest post published (or the active post while writing each individual post)
+// PostParams is struct similar to Params, but it also holds the currently active post.
+type PostParams struct {
+	Params
+
+	// Current is the active post being written, otherwise it's nil
 	Current Post
 }
 
@@ -139,9 +144,9 @@ func cloneTemplate(base *text.Template, path string) (*text.Template, error) {
 	return t.New(name).Parse(string(b))
 }
 
-func executeTemplate(file string, tmpl *text.Template, params TemplateParams) error {
+func executeTemplate(file string, tmpl *text.Template, data interface{}) error {
 	var buf bytes.Buffer
-	if err := tmpl.ExecuteTemplate(&buf, tmpl.Name(), params); err != nil {
+	if err := tmpl.ExecuteTemplate(&buf, tmpl.Name(), data); err != nil {
 		return err
 	}
 	return writeFile(file, bytes.TrimSpace(buf.Bytes()))
