@@ -122,7 +122,8 @@ func loadTemplate(path string) (*text.Template, error) {
 	if err != nil {
 		return nil, err
 	}
-	return text.New("").Funcs(TemplateFuncs).Parse(string(b))
+	name := filepath.Base(path)
+	return text.New(name).Funcs(TemplateFuncs).Parse(string(b))
 }
 
 func cloneTemplate(base *text.Template, path string) (*text.Template, error) {
@@ -134,12 +135,13 @@ func cloneTemplate(base *text.Template, path string) (*text.Template, error) {
 	if err != nil {
 		return nil, err
 	}
-	return t.Parse(string(b))
+	name := filepath.Base(path)
+	return t.New(name).Parse(string(b))
 }
 
 func executeTemplate(file string, tmpl *text.Template, params TemplateParams) error {
 	var buf bytes.Buffer
-	if err := tmpl.ExecuteTemplate(&buf, "", params); err != nil {
+	if err := tmpl.ExecuteTemplate(&buf, tmpl.Name(), params); err != nil {
 		return err
 	}
 	return writeFile(file, bytes.TrimSpace(buf.Bytes()))
