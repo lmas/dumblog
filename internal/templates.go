@@ -24,6 +24,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	text "text/template"
 	"time"
@@ -100,6 +101,17 @@ var TemplateFuncs = text.FuncMap{
 	},
 	"slugify": func(s string) string {
 		return url.PathEscape(strings.ReplaceAll(strings.ToLower(s), " ", "_"))
+	},
+	"isset": func(field string, v interface{}) bool {
+		// Stolen from: https://stackoverflow.com/a/34703243
+		rv := reflect.ValueOf(v)
+		if rv.Kind() == reflect.Ptr {
+			rv = rv.Elem()
+		}
+		if rv.Kind() != reflect.Struct {
+			return false
+		}
+		return rv.FieldByName(field).IsValid()
 	},
 }
 
