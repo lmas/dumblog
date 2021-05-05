@@ -34,7 +34,7 @@ const (
 	// Name is the application name shown for "dumblog version"
 	Name string = "dumblog"
 	// Version is the current version shown for "dumblog version"
-	Version string = "0.1.2"
+	Version string = "0.1.5"
 
 	postOrig     string = "post.md"
 	postDest     string = "index.html"
